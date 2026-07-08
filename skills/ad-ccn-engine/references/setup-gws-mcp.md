@@ -13,40 +13,58 @@
 | 腳 | 做什麼 | 誰能裝 |
 |----|--------|--------|
 | ① **gws CLI** | 讓 AI 能讀寫你的 Google Sheet | 你自己（含一次 Google 授權）|
-| ② **行銷 MCP**（`cm-marketing-remote`）| 讓 AI 能抓 Meta／Google 廣告成效 | ⚠️ 需工程師／管理員開權限 |
+| ② **行銷 MCP**（`cm-mcp-marketing`）| 讓 AI 能抓 Meta／Google 廣告成效 | ⚠️ 需 xlab 團隊／工程師協助 |
 | ③ **成效追蹤表** | 存放各廣告的 CPI 與狀態 | AI 幫你建（說「建立成效追蹤表」）|
 
 ---
 
 ## ① 安裝 gws CLI 並授權
 
-`gws` 是 Google Workspace 命令列工具，讓引擎能代你讀寫 Google Sheet。
+`gws` 是 **Google Workspace CLI**（Google 官方開源工具），讓引擎能代你讀寫
+Google Sheet。
+- 官方 repo：<https://github.com/googleworkspace/cli>
 
-1. 安裝（macOS，用 Homebrew）：
-   ```
-   brew install gws       # 若你的團隊用其他安裝方式，請依內部說明
-   ```
-2. 用**你自己的 Google 帳號**授權一次（會開瀏覽器請你登入同意）：
-   ```
-   gws auth login
-   ```
-   - ⚠️ 這一步是**你本人**在瀏覽器點「同意」，AI 無法代做（帳號安全關卡）。
-   - 授權範圍＝你在 Google Sheet 看得到的範圍。
-3. 確認成功：
-   ```
-   gws sheets --help
-   ```
-   有印出說明就代表裝好了。
+**安裝（擇一，macOS 建議用 Homebrew）：**
+
+```bash
+# 方式 A：Homebrew（macOS / Linux）— 最簡單
+brew install googleworkspace-cli
+
+# 方式 B：下載官方預編譯執行檔（解壓後放進 PATH）
+#   https://github.com/googleworkspace/cli/releases
+
+# 方式 C：npm
+npm install -g @googleworkspace/cli
+```
+
+**授權（本人在瀏覽器同意一次，AI 無法代做——帳號安全關卡）：**
+
+```bash
+# 有裝 gcloud CLI：首次用 setup（會建 GCP 專案、開 API、登入）
+gws auth setup
+#   之後要再登入時用：
+gws auth login
+```
+- 沒有 gcloud 的話：到 Google Cloud Console 建 OAuth 憑證，存到
+  `~/.config/gws/client_secret.json`，再跑 `gws auth login`。
+- 授權範圍＝你在 Google Sheet 看得到的範圍。
+
+**確認成功：**
+```bash
+gws sheets --help
+```
+有印出說明就代表裝好了。
 
 ---
 
-## ② 接上行銷 MCP（`cm-marketing-remote`）
+## ② 接上行銷 MCP（`cm-mcp-marketing`）
 
 這個 MCP 讓引擎能抓 Meta／Google 廣告的花費與安裝數（算 CPI 用）。
 
-- ⚠️ 這是**遠端服務、且部署時綁定特定廣告帳戶**——不是自己下載就好。
-- 請**聯繫團隊工程師／管理員**，把你的 Claude Code 接上這個 MCP，並確認你對
-  要追蹤的廣告帳戶有權限。
+- 內部 repo（CMoney GitLab）：<http://gitlab.cmoney.tw/xlab/cm-mcp-marketing>
+- ⚠️ 這是 **CMoney 內部的遠端 MCP 服務，且部署時綁定特定廣告帳戶**——不是公開
+  下載就能用。請**依該 repo 的 README 部署／設定**，把它接進你的 Claude Code
+  MCP 設定；遇到權限、連線或帳戶綁定問題，**聯繫 xlab 團隊／工程師**。
 - 接好後，Claude Code 裡會出現 `cm-marketing-remote` 相關工具（如
   `get_ad_insights`、`gads_get_ad_insights`）。
 
@@ -74,7 +92,7 @@
 ## 完成檢查清單
 
 - [ ] `gws sheets --help` 有正常輸出（① 完成）
-- [ ] Claude Code 裡看得到 `cm-marketing-remote` 的工具（② 完成，需工程師）
+- [ ] Claude Code 裡看得到 `cm-marketing-remote` 的工具（② 完成，需 xlab 協助）
 - [ ] 說「建立成效追蹤表」後，Google Drive 出現一張含兩分頁的新表（③ 完成）
 
 三項都打勾後，就能對引擎說「**更新 CPI**」，它會自動抓數據、算 CPI、判燈號、
@@ -85,7 +103,7 @@
 ## 常見問題
 
 - **只裝了 plugin，喊「更新 CPI」沒反應？** → 多半是 ① 或 ② 還沒好。先跑
-  `gws sheets --help` 確認 gws；再確認工程師已幫你接上行銷 MCP。
+  `gws sheets --help` 確認 gws；再確認已依 ② 接上行銷 MCP。
 - **iOS 的安裝數看起來是 0？** → 這是 Apple 隱私限制（ATT/SKAN）造成的正常
   低估，不是壞掉；引擎會把安裝太少的先標「觀察中」，不急著判生死。
 - **不想追成效，只想發想切角？** → 完全不用裝 gws／MCP，直接用「發想切角」即可。
